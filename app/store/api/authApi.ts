@@ -4,7 +4,7 @@ import type {
   RegisterResponse,
   LoginRequest,
   LoginResponse,
-} from "@/types/api.types";
+} from "@/app/types/api.types";
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

@@ -1,17 +1,41 @@
-import Link from 'next/link'
-import React from 'react'
+import Link from "next/link";
 
-type Props = {
-    children: React.ReactNode
-    href: string
+interface SecondaryButtonProps {
+  href?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+  type?: "button" | "submit" | "reset";
+  className?: string;
 }
 
-export const SecondaryButton: React.FC<Props> = ({href ,children}) => {
+export function SecondaryButton({
+  href,
+  onClick,
+  children,
+  disabled = false,
+  type = "button",
+  className = "",
+}: SecondaryButtonProps) {
+  const baseClasses =
+    "w-full text-[17px] text-black-1 font-medium font-figtree flex py-3.5 px-6 items-center justify-center text-center rounded-full bg-black-1/[6%] hover:bg-black-1/[10%] transition disabled:opacity-50 disabled:cursor-not-allowed";
+
+  if (href && !disabled) {
+    return (
+      <Link href={href} className={`${baseClasses} ${className}`}>
+        {children}
+      </Link>
+    );
+  }
+
   return (
-    <Link
-    className='text-[17px] disabled:bg-gray-1/20 disabled:opacity-50 text-black-1 font-medium font-figtree flex py-3.5 px-6 items-center justify-center text-center bg-green-2 border border-green-2 rounded-full' 
-    href={href}
-    >{children}
-    </Link>
-  )
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseClasses} ${className}`}
+    >
+      {children}
+    </button>
+  );
 }

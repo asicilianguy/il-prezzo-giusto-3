@@ -5,7 +5,7 @@ import type {
   GetOffersResponse,
   GetBrandsQueryParams,
   GetBrandsResponse,
-} from "@/types/api.types";
+} from "@/app/types/api.types";
 
 export const offersApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

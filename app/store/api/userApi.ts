@@ -3,7 +3,7 @@ import type {
   User,
   UpdateUserRequest,
   UpdateNotificationPreferencesRequest,
-} from "@/types/api.types";
+} from "@/app/types/api.types";
 
 export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

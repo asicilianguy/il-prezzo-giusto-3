@@ -3,7 +3,7 @@ import type {
   ShoppingListItem,
   AddToShoppingListRequest,
   UpdateShoppingListItemRequest,
-} from "@/types/api.types";
+} from "@/app/types/api.types";
 
 export const shoppingListApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

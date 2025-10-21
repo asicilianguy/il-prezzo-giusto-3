@@ -2,120 +2,152 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import type { ProductOffer } from "@/app/types/api.types";
+import {
+  formatPrice,
+  formatExpiry,
+  formatDiscount,
+} from "@/app/utils/formatters";
+import { useAddToShoppingListMutation } from "@/app/store/api/shoppingListApi";
+import { useAppSelector } from "@/app/store/hooks";
+import { SUPERMARKET_DISPLAY_NAMES } from "@/app/constants/supermarkets";
 
-// ✅ Add `export` in front of the interface
-export interface ProductOffer {
-     store: string;
-     aisle: string;
-     productImage: string;
-     productName: string;
-     productWeight: string;
-     badgeText: string;
-     brandName: string;
-     isPreferred: boolean;
-     price: string;
-     oldPrice: string;
-     discount: string;
-     expiry: string;
-     isAdded: boolean;
+interface ProductOfferItemProps {
+  offer: ProductOffer;
 }
 
-export default function ProductOfferItem({
-     store,
-     aisle,
-     productImage,
-     productName,
-     productWeight,
-     badgeText,
-     brandName,
-     isPreferred,
-     price,
-     oldPrice,
-     discount,
-     expiry,
-     isAdded,
-}: ProductOffer) {
-     return (
-          <div className="rounded-[12px] mb-5 border border-black/[0.04] bg-white shadow-3xl">
-               <div className="gradient3 rounded-t-[12px] px-3 py-2.5">
-                    <ul className="flex items-center justify-between">
-                         <li className="text-white font-figtree font-medium flex items-center gap-1.5">
-                              <Image src="/icons/shop.svg" width={15} height={15} alt="Shop" />
-                              {store}
-                         </li>
-                         <li className="text-white font-figtree font-medium flex items-center gap-1.5">
-                              <Image src="/icons/tag-icon.svg" width={15} height={15} alt="Tag" />
-                              Aisle: {aisle}
-                         </li>
-                    </ul>
-               </div>
+export default function ProductOfferItem({ offer }: ProductOfferItemProps) {
+  const [isAdding, setIsAdding] = useState(false);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const [addToShoppingList] = useAddToShoppingListMutation();
 
-               <div className="px-[18px] py-5">
-                    <div className="flex items-start justify-between">
-                         <div className="flex items-center gap-4">
-                              <span className="bg-gray1 border border-black/[0.04] flex items-center justify-center rounded-[10px] w-[50px] h-[50px]">
-                                   <Image src={productImage} width={26} height={26} alt={productName} />
-                              </span>
-                              <div>
-                                   <h4 className="text-black-1 font-figtree font-semibold text-lg">
-                                        {productName}
-                                   </h4>
-                                   <p className="text-gray-1 font-medium text-[15px]">{productWeight}</p>
-                              </div>
-                         </div>
-                         <span className="text-green-9 pt-[3px] font-figtree font-medium text-[11px] inline-flex items-center justify-center rounded-full h-6 w-[96px] bg-green-7">
-                              {badgeText}
-                         </span>
-                    </div>
+  const handleAddToList = async () => {
+    if (!isAuthenticated) {
+      // Redirect to login
+      window.location.href = "/Login";
+      return;
+    }
 
-                    <div className="mt-[15px] border border-black/[0.12] rounded-full p-2 flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                              <span className="bg-gray-3 w-5 h-5 flex items-center rounded-full"></span>
-                              <h4 className="text-black-1 font-medium text-sm">{brandName}</h4>
-                         </div>
-                         {isPreferred ? (
-                              <Link
-                                   href="/"
-                                   className="flex items-center text-green-6 font-normal text-xs gap-[7px]"
-                              >
-                                   <Image src="/icons/check-icon.svg" width={10} height={10} alt="Check" />
-                                   Preferred brand
-                              </Link>
-                         ) : (
-                              <Link
-                                   href="/"
-                                   className="flex items-center text-blue-1 font-normal text-xs gap-[7px]"
-                              >
-                                   <Image src="/icons/pluse-icon.svg" width={10} height={10} alt="Add" />
-                                   Add to preferred brands
-                              </Link>
-                         )}
-                    </div>
+    setIsAdding(true);
+    try {
+      await addToShoppingList({
+        productId: offer._id,
+        quantity: 1,
+      }).unwrap();
+      // Show success toast (you can add a toast notification system)
+      alert("Added to shopping list!");
+    } catch (error) {
+      console.error("Failed to add to list:", error);
+      alert("Failed to add to list. Please try again.");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
-                    <div className="flex items-center justify-between mt-6">
-                         <div>
-                              <div className="flex items-center gap-[7px] mb-1">
-                                   <h4 className="text-black-1 font-figtree font-bold flex items-center gap-2.5">
-                                        {price}
-                                        <span className="text-gray-1 text-[15px] line-through">{oldPrice}</span>
-                                   </h4>
-                                   <span className="text-orange-4 flex items-center justify-center text-xs font-semibold">
-                                        {discount}
-                                   </span>
-                              </div>
-                              <p className="text-gray-1 text-xs">Expires in {expiry}</p>
-                         </div>
+  const daysUntilExpiry = formatExpiry(offer.offerEndDate);
+  const isRecentlyAdded =
+    new Date().getTime() - new Date(offer.createdAt).getTime();
+  3 * 24 * 60 * 60 * 1000; // Less than 3 days
 
-                         <button
-                              className={`text-sm font-medium rounded-full px-4 py-1 ${isAdded
-                                   ? "bg-green-2 text-black-1"
-                                   : "bg-gray-2 text-gray-1"
-                                   }`}
-                         >
-                              {isAdded ? "Added" : "Add"}
-                         </button>
-                    </div>
-               </div>
+  return (
+    <div className="rounded-[12px] mb-5 border border-black/[0.04] bg-white shadow-3xl">
+      <div className="gradient3 rounded-t-[12px] px-3 py-2.5">
+        <ul className="flex items-center justify-between">
+          <li className="text-white font-figtree font-medium flex items-center gap-1.5 text-sm">
+            <Image src="/icons/shop.svg" width={15} height={15} alt="Shop" />
+            {SUPERMARKET_DISPLAY_NAMES[offer.chainName]}
+          </li>
+          <li className="text-white font-figtree font-medium flex items-center gap-1.5 text-sm capitalize">
+            <Image src="/icons/tag-icon.svg" width={15} height={15} alt="Tag" />
+            {offer.supermarketAisle}
+          </li>
+        </ul>
+      </div>
+
+      <div className="px-[18px] py-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <span className="bg-gray1 border border-black/[0.04] flex items-center justify-center rounded-[10px] w-[50px] h-[50px]">
+              <Image
+                src="/icons/product-placeholder.svg"
+                width={26}
+                height={26}
+                alt={offer.productName}
+              />
+            </span>
+            <div>
+              <h4 className="text-base text-black-1 font-medium leading-[20px] mb-0.5">
+                {offer.productName}
+              </h4>
+              <p className="text-xs text-gray-1 font-normal">
+                {offer.quantity}
+                {offer.pricePerUnit &&
+                  ` · ${formatPrice(offer.pricePerUnit)}/${
+                    offer.pricePerUnitType
+                  }`}
+              </p>
+            </div>
           </div>
-     );
+        </div>
+
+        <div className="flex items-center gap-2 my-3 flex-wrap">
+          {isRecentlyAdded && (
+            <span className="gradient2 px-2.5 py-1 rounded-full text-xs font-medium text-black-1 inline-flex items-center">
+              Recently Added
+            </span>
+          )}
+          {offer.brand && (
+            <span className="gradient2 px-2.5 py-1 rounded-full text-xs font-medium text-black-1 inline-flex items-center gap-1">
+              <Image src="/icons/fire-icon.svg" width={14} height={14} alt="" />
+              {offer.brand}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-[22px] font-semibold text-black-1 leading-none">
+              {formatPrice(offer.offerPrice)}
+            </span>
+            {offer.previousPrice && (
+              <>
+                <span className="text-base font-normal text-gray-1 line-through leading-none">
+                  {formatPrice(offer.previousPrice)}
+                </span>
+                {offer.discountPercentage && (
+                  <span className="gradient4 text-black-1 text-xs font-semibold px-2.5 py-1 rounded-full">
+                    {formatDiscount(offer.discountPercentage)}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+          <button
+            onClick={handleAddToList}
+            disabled={isAdding}
+            className="gradient3 w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-50"
+          >
+            {isAdding ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Image src="/icons/add.svg" width={24} height={24} alt="Add" />
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1.5 mt-3">
+          <Image
+            src="/icons/clock-icon.svg"
+            width={14}
+            height={14}
+            alt="Clock"
+          />
+          <p className="text-xs font-normal text-gray-1">
+            Expires in {daysUntilExpiry}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }

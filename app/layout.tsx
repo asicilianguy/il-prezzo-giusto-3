@@ -3,6 +3,7 @@ import { Figtree } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ReduxProvider } from "@/app/store/Provider";
+import AuthPersistence from "@/app/components/AuthPersistence";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -47,6 +48,7 @@ export default function RootLayout({
         className={`${figtree.variable} ${sfProDisplay.variable} font-figtree antialiased`}
       >
         <ReduxProvider>
+          <AuthPersistence />
           <div className="max-w-[575px] w-full mx-auto">{children}</div>
         </ReduxProvider>
       </body>

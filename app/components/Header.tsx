@@ -1,24 +1,63 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
+import { useAppSelector, useAppDispatch } from "@/app/store/hooks";
+import { logout } from "@/app/store/slices/authSlice";
 
 export default function Header() {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userId");
+    dispatch(logout());
+    router.push("/Login");
+  };
 
   return (
-    <div className="bg-white flex items-center justify-between pt-[24px] pb-[22px] px-[18px]">
-      <div className="flex items-center gap-[15px]">
-        <div className="max-w-[56px] w-full">
-          <Image src={"/images/header-img.png"} width={56} height={44.59} alt="" />
-        </div>
-        <div className="flex-1 w-full">
-          <h4 className="text-black-1 font-figtree mb-1 font-medium text-lg flex items-center gap-3">User Not Logged In <Image src={"/icons/right-arrow.svg"} width={5} height={10} alt="" /> </h4>
-          <p className="text-gray-1 font-figtree font-normal text-sm">Welcome to Il Prezzo Giusto 👋</p>
-        </div>
+    <header className="w-full py-4 px-[18px] flex items-center justify-between bg-white border-b border-black/[0.05]">
+      <Link href="/AllOffers">
+        <Image
+          src="/icons/logo-prezzo.svg"
+          width={120}
+          height={40}
+          alt="Il Prezzo Giusto"
+        />
+      </Link>
+      <div className="flex items-center gap-3">
+        {isAuthenticated ? (
+          <>
+            <Link
+              href="/profile"
+              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"
+            >
+              <Image
+                src="/icons/user.svg"
+                width={20}
+                height={20}
+                alt="Profile"
+              />
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium text-gray-1 hover:text-black-1"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link
+            href="/Login"
+            className="px-4 py-2 bg-black text-white rounded-full text-sm font-medium"
+          >
+            Sign In
+          </Link>
+        )}
       </div>
-      <Link href={"#"} className="flex items-center justify-center gradient rounded-[10px] w-[42px] h-[42px]"><Image src={"/icons/coffee.svg"} width={24} height={24} alt="" /></Link>
-    </div>
+    </header>
   );
 }

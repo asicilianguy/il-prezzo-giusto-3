@@ -1,41 +1,53 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
+import Image from "next/image";
 
-export default function Counter() {
-     const [count, setCount] = useState<number>(1);
+interface CounterProps {
+  value: number;
+  onChange: (newValue: number) => void;
+  min?: number;
+  max?: number;
+  disabled?: boolean;
+}
 
-     const handleDecrement = () => {
-          if (count > 1) setCount(prev => prev - 1);
-     };
+export default function Counter({
+  value,
+  onChange,
+  min = 1,
+  max = 99,
+  disabled = false,
+}: CounterProps) {
+  const handleIncrement = () => {
+    if (value < max && !disabled) {
+      onChange(value + 1);
+    }
+  };
 
-     const handleIncrement = () => {
-          setCount(prev => prev + 1);
-     };
+  const handleDecrement = () => {
+    if (value > min && !disabled) {
+      onChange(value - 1);
+    }
+  };
 
-     return (
-          <div className='border border-black/[10%] gap-0.5 rounded-full py-[1px] px-0.5 flex items-center'>
-               <button
-                    onClick={handleDecrement}
-                    className="flex items-center cursor-pointer justify-center"
-               >
-                    <img src="/icons/minus-icon.svg" alt="Minus" />
-               </button>
-
-               <input
-                    type="number"
-                    value={count}
-                    onChange={(e) => setCount(Number(e.target.value) || 0)}
-                    className='text-lg font-medium text-black-1 placeholder:text-black-1 bg-transparent border-0 w-6 text-center outline-none'
-               />
-
-               <button
-                    onClick={handleIncrement}
-                    className="flex items-center cursor-pointer justify-center"
-               >
-                    <img src="/icons/plus-icon.svg" alt="Plus" />
-               </button>
-          </div>
-     );
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={handleDecrement}
+        disabled={disabled || value <= min}
+        className="w-8 h-8 rounded-full border border-black/[0.1] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <Image src="/icons/minus.svg" width={16} height={16} alt="Decrease" />
+      </button>
+      <span className="text-base font-medium text-black-1 min-w-[24px] text-center">
+        {value}
+      </span>
+      <button
+        onClick={handleIncrement}
+        disabled={disabled || value >= max}
+        className="w-8 h-8 rounded-full border border-black/[0.1] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <Image src="/icons/plus.svg" width={16} height={16} alt="Increase" />
+      </button>
+    </div>
+  );
 }
